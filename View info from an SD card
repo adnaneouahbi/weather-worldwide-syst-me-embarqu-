@@ -1,0 +1,83 @@
+#include <SPI.h>
+#include <SD.h>
+
+Sd2Card card;
+SdVolume volume;
+SdFile root;
+
+// Arduino Ethernet shield: pin 4
+// Adafruit SD shields and modules: pin 10
+// Sparkfun SD shield: pin 8
+const int chipSelect = 4;    
+
+void setup()
+{
+ // Ouvre le port serie et attend au besoin...
+  Serial.begin(9600);
+   while (!Serial) {
+    ; // wait for serial port to connect. Needed for Leonardo only
+  }
+
+  Serial.print("\nInitializing SD card...");
+  pinMode(10, OUTPUT); 
+
+  if (!card.init(SPI_HALF_SPEED, chipSelect)) {
+    Serial.println("initialization failed. Things to check:");
+    Serial.println("* is a card is inserted?");
+    Serial.println("* Is your wiring correct?");
+    Serial.println("* did you change the chipSelect pin to match your shield or module?");
+    return;
+  } else {
+   Serial.println("Wiring is correct and a card is present."); 
+  }
+
+  // print the type of card
+  Serial.print("\nCard type: ");
+  switch(card.type()) {
+    case SD_CARD_TYPE_SD1:
+      Serial.println("SD1");
+      break;
+    case SD_CARD_TYPE_SD2:
+      Serial.println("SD2");
+      break;
+    case SD_CARD_TYPE_SDHC:
+      Serial.println("SDHC");
+      break;
+    default:
+      Serial.println("Unknown");
+  }
+
+  // Maintenant on essaie d'ouvrir le volume en fat 16 ou 32
+  if (!volume.init(card)) {
+    Serial.println("Could not find FAT16/FAT32 partition.\nMake sure you've formatted the card");
+    return;
+  }
+
+  // On affiche la taille de l'espace
+  uint32_t volumesize;
+  Serial.print("\nVolume type is FAT");
+  Serial.println(volume.fatType(), DEC);
+  Serial.println();
+  
+  volumesize = volume.blocksPerCluster();    
+  volumesize *= volume.clusterCount();       
+  volumesize *= 512;                            
+  Serial.print("Volume size (bytes): ");
+  Serial.println(volumesize);
+  Serial.print("Volume size (Kbytes): ");
+  volumesize /= 1024;
+  Serial.println(volumesize);
+  Serial.print("Volume size (Mbytes): ");
+  volumesize /= 1024;
+  Serial.println(volumesize);
+  
+  Serial.println("\nFichiers trouves sur la carte avec nom, date et taille en bytes: ");
+  root.openRoot(volume);
+ 
+  // Liste les fichiers de la carte avec date et taille
+  root.ls(LS_R | LS_DATE | LS_SIZE);
+}
+
+void loop(void) { 
+  // rien à faire
+}
