@@ -1,0 +1,38 @@
+#include <ezButton.h>
+#include <ChainableLED.h>
+#define NUM_LEDS 5
+ChainableLED leds(7, 8, NUM_LEDS);
+ezButton button1(2); // create ezButton object that attach to pin 6;
+ezButton button2(3); // create ezButton object that attach to pin 7;
+void setup() {
+Serial.begin(9600);
+button1.setDebounceTime(50); // set debounce time to 100 milliseconds
+button2.setDebounceTime(50); // set debounce time to 100 milliseconds
+button1.setCountMode(COUNT_RISING);
+button2.setCountMode(COUNT_RISING);
+leds.init();}}
+void loop() {
+button1.loop(); // MUST call the loop() function first
+button2.loop(); // MUST call the loop() function first
+int btn1State = button1.getState();
+int btn2State = button2.getState();
+unsigned long count = button1.getCount();
+unsigned long count2 = button2.getCount();
+for (byte i=0; i<NUM_LEDS; i++)
+{
+if(count < 5 and count != 0){
+leds.setColorRGB(i, 255, 255, 0);
+count2=0;
+}
+if(count2 < 5 and count2 !=0 ){
+leds.setColorRGB(i, 0, 255, 0 );
+count=0;
+}
+if (count >= 5){
+leds.setColorRGB(i, 0, 0, 255);
+button2. resetCount();
+}
+if (count2 >= 5){
+leds.setColorRGB(i, 0, 255, 255);
+button1.resetCount();
+}}
